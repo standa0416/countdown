@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Kostka</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      perspective: 1000px;
+    }
+
+    .scene {
+      width: 200px;
+      height: 200px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s ease-out;
+    }
+
+    .face {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 1rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      box-sizing: border-box;
+    }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dot {
+      width: 20px;
+      height: 20px;
+      background-color: black;
+      border-radius: 50%;
+    }
+
+    .face1 { transform: rotateY(0deg) translateZ(100px); }
+    .face2 { transform: rotateY(90deg) translateZ(100px); }
+    .face3 { transform: rotateY(180deg) translateZ(100px); }
+    .face4 { transform: rotateY(-90deg) translateZ(100px); }
+    .face5 { transform: rotateX(90deg) translateZ(100px); }
+    .face6 { transform: rotateX(-90deg) translateZ(100px); }
+  </style>
+</head>
+<body>
+  <div id="dice" class="scene"></div>
+
+  <script>
+    const facesDots = {
+      1: [4],
+      2: [0, 8],
+      3: [0, 4, 8],
+      4: [0, 2, 6, 8],
+      5: [0, 2, 4, 6, 8],
+      6: [0, 2, 3, 5, 6, 8]
+    };
+
+    const faceRotations = {
+      1: { x: 0, y: 0 },
+      2: { x: 0, y: -90 },
+      3: { x: 0, y: 180 },
+      4: { x: 0, y: 90 },
+      5: { x: -90, y: 0 },
+      6: { x: 90, y: 0 }
+    };
+
+    function createFace(num, className) {
+      const face = document.createElement("div");
+      face.className = `face ${className}`;
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        if (facesDots[num].includes(i)) {
+          const dot = document.createElement("div");
+          dot.className = "dot";
+          cell.appendChild(dot);
+        }
+        face.appendChild(cell);
+      }
+      return face;
+    }
+
+    const dice = document.getElementById("dice");
+    dice.appendChild(createFace(1, "face1"));
+    dice.appendChild(createFace(2, "face2"));
+    dice.appendChild(createFace(3, "face3"));
+    dice.appendChild(createFace(4, "face4"));
+    dice.appendChild(createFace(5, "face5"));
+    dice.appendChild(createFace(6, "face6"));
+
+    let angleX = 0;
+    let angleY = 0;
+    let rolling = true;
+
+    function updateTransform() {
+      dice.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg)`;
+    }
+
+    function autoRotate() {
+      if (rolling) {
+        angleX += Math.random() * 10;
+        angleY += Math.random() * 10;
+        updateTransform();
+      }
+      requestAnimationFrame(autoRotate);
+    }
+
+    function stopAndAlign() {
+      const result = Math.floor(Math.random() * 6) + 1;
+      const baseX = Math.floor(angleX / 360) * 360;
+      const baseY = Math.floor(angleY / 360) * 360;
+      angleX = baseX + faceRotations[result].x;
+      angleY = baseY + faceRotations[result].y;
+      updateTransform();
+    }
+
+    dice.addEventListener("click", () => {
+      if (rolling) {
+        rolling = false;
+        stopAndAlign();
+      } else {
+        rolling = true;
+      }
+    });
+
+    autoRotate();
+  </script>
+</body>
+</html>
