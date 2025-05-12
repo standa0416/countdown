@@ -34,6 +34,12 @@
       font-size: 1rem;
       cursor: pointer;
     }
+    #linkOutput {
+      color: #0f0;
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -41,6 +47,7 @@
     <label for="datetime">Vyber datum a čas cíle:</label>
     <input type="datetime-local" id="datetime">
     <button onclick="startCountdown()">Spustit odpočet</button>
+    <div id="linkOutput"></div>
   </div>
   <div id="countdown">Načítání…</div>
 
@@ -55,11 +62,11 @@
       targetDate = new Date(input).getTime();
       if (isNaN(targetDate)) return alert('Špatný formát data/času.');
 
-      document.getElementById('setup').style.display = 'none';
-      document.getElementById('countdown').style.display = 'block';
+      const url = new URL(window.location.href);
+      url.searchParams.set('ts', targetDate);
+      document.getElementById('linkOutput').innerHTML = `Odkaz na tento odpočet: <br><a href="${url.href}" target="_blank">${url.href}</a>`;
 
-      interval = setInterval(updateCountdown, 50);
-      updateCountdown();
+      showCountdown();
     }
 
     function updateCountdown() {
@@ -72,6 +79,22 @@
       } else {
         display.textContent = 'Čas vypršel';
         clearInterval(interval);
+      }
+    }
+
+    function showCountdown() {
+      document.getElementById('setup').style.display = 'none';
+      document.getElementById('countdown').style.display = 'block';
+      interval = setInterval(updateCountdown, 50);
+      updateCountdown();
+    }
+
+    // pokud máme ?ts= v URL, rovnou spustíme odpočet
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('ts')) {
+      targetDate = parseInt(params.get('ts'));
+      if (!isNaN(targetDate)) {
+        showCountdown();
       }
     }
   </script>
